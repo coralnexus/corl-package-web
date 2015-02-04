@@ -1,0 +1,62 @@
+{
+  "builders": {
+    "package": {
+      "environment": {
+        "production": {
+          "coralnexus__core": "github:::coralnexus/corl-package-core[d1707dc881922c4a741778102ea2fb31937c8c9c]"
+        },
+        "qa": {
+          "use": "production"
+        },
+        "default": {
+          "coralnexus__core": "github:::coralnexus/corl-package-core"
+        }
+      }
+    }
+  },
+  "provisioners": {
+    "puppetnode": {
+      "coralnexus::web": {
+        "profiles": {
+          "apache_server": {
+            "environment": {
+              "production": {
+                "modules": {
+                  "apache": "github:::coralnexus/puppet-apache[a7708046df3c7436398b708e7bfcec6c9deebf84]"
+                }
+              },
+              "qa": {
+                "use": "production"
+              },
+              "default": {
+                "modules": {
+                  "apache": "github:::coralnexus/puppet-apache"
+                }
+              }
+            }
+          },
+          "apache_static": {
+            "extend": "apache_server"
+          },
+          "varnish_server": {
+            "environment": {
+              "production": {
+                "modules": {
+                  "varnish": "github:::maxchk/puppet-varnish[b9846d1b35e87a45c98213fddfe71fa0a6f3b31c]"
+                }
+              },
+              "qa": {
+                "use": "production"
+              },
+              "default": {
+                "modules": {
+                  "varnish": "github:::maxchk/puppet-varnish[develop]"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,9 @@
+# Eclipse project files
+.project
+.buildpath
+.cache
+.settings
+
+# CORL ignores
+.project_cache
+.nucleon
