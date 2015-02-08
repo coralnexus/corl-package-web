@@ -54,27 +54,27 @@
                 }
               }
             }
-          }
-        }
-      },
-      "apache_icinga2web": {
-        "extend": [
-          "coralnexus::core::profile::icinga_server",
-          "coralnexus::web::profile::apache_server",
-          "coralnexus::core::profile::php"
-        ],
-        "environment": {
-          "production": {
-            "modules": {
-              "icinga2web": "github:::coralnexus/puppet-icinga2web"
-            }
           },
-          "qa": {
-            "use": "production"
-          },
-          "default": {
-            "modules": {
-              "icinga2web": "github:::coralnexus/puppet-icinga2web"
+          "apache_icinga2web": {
+            "extend": [
+              "coralnexus::core::profile::icinga_server",
+              "coralnexus::web::profile::apache_server",
+              "coralnexus::core::profile::php"
+            ],
+            "environment": {
+              "production": {
+                "modules": {
+                  "icinga2web": "github:::coralnexus/puppet-icinga2web"
+                }
+              },
+              "qa": {
+                "use": "production"
+              },
+              "default": {
+                "modules": {
+                  "icinga2web": "github:::coralnexus/puppet-icinga2web"
+                }
+              }
             }
           }
         }
