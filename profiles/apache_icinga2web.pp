@@ -22,7 +22,6 @@ class coralnexus::web::profile::apache_icinga2web {
   class { 'icinga2web':
     require => [
       Class['coralnexus::core::profile::icinga_server'],
-      Class['coralnexus::web::profile::apache_server'],
       Class['coralnexus::core::profile::php']
     ]
   }
@@ -30,7 +29,7 @@ class coralnexus::web::profile::apache_icinga2web {
   #---
 
   apache::vhost::file { $base_name:
-    doc_root               => $icinga2web::params::repo_path,
+    doc_root               => "${icinga2web::params::repo_path}/public",
     server_name            => global_param('apache_icinga2web_domain', $::hostname),
     aliases                => global_array('apache_icinga2web_aliases'),
     admin_email            => global_param('apache_icinga2web_admin_email', $apache::params::admin_email),
@@ -55,5 +54,5 @@ class coralnexus::web::profile::apache_icinga2web {
   #-----------------------------------------------------------------------------
   # Optional systems
 
-  corl::include { 'apache_icinga2web_classes': require => Apache::Vhost::File[$base_name] }
+  corl::include { 'apache_icinga2web_classes': require => Class['icinga2web'] }
 }
