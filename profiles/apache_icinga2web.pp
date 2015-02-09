@@ -6,6 +6,9 @@ class coralnexus::web::profile::apache_icinga2web {
   $base_name = 'coralnexus_icinga_interface'
   anchor { $base_name: }
 
+  $apache_vhost_file = global_param('apache_icinga2web_vhost_name', '100-icingaweb2')
+  $apache_vhost_port = global_param('apache_icinga2web_vhost_port', 80)
+
   #-----------------------------------------------------------------------------
   # Required systems
 
@@ -58,12 +61,46 @@ class coralnexus::web::profile::apache_icinga2web {
 
   #---
 
-  corl::definitions { 'apache_icinga2web::vhost::file':
-    type      => 'apache::vhost::file',
+  corl::exec { 'apache_icinga2web':
     resources => {
-      icinga_web => {
-        doc_root => "${icinga2web::params::repo_path}/public",
-        require  => Class['icinga2web']
+      apache_vhost => {
+        command => "${icinga2web::params::repo_path}/bin/icingacli setup config webserver apache --document-root '${icinga2web::params::repo_path}/public' > /etc/apache2/sites-available/${apache_vhost_file}.conf",
+        creates => "/etc/apache2/sites-available/${apache_vhost_file}.conf",
+        require => Class['icinga2web']
+      },
+      apache_port => {
+        command => "echo 'Listen ${apache_vhost_port}' > /etc/apache2/conf.d/icinga2.conf",
+        creates => "/etc/apache2/conf.d/icinga2.conf",
+        require => Class['icinga2web']
+      },
+      apache_site_enable => {
+        command     => "a2ensite ${apache_vhost_file}",
+        refreshonly => true,
+        subscribe   => [ 'apache_vhost', 'apache_port' ]
+      },
+      apache_restart => {
+        command     => "service apache2 restart",
+        refreshonly => true,
+        subscribe   => 'apache_site_enable'
+      }
+    },
+    defaults => {
+      user  => 'www-data',
+      group => 'www-data'
+    }
+  }
+
+  #---
+
+  corl::firewall { 'apache_icinga2web':
+    resources => {
+      icinga_http => {
+        name   => "1000 INPUT Allow Icinga HTTP connections",
+        action => "accept",
+        chain  => "INPUT",
+        state  => "NEW",
+        proto  => "tcp",
+        dport  => $apache_vhost_port
       }
     }
   }
