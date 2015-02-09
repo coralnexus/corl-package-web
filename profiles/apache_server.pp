@@ -11,6 +11,11 @@ class coralnexus::web::profile::apache_server {
 
   class { 'apache': require => Anchor[$base_name] }
 
+  if defined('::php') {
+    class { 'php::apache': require => Anchor[$base_name] }
+    a2mod { 'php5': require => Class['php::apache'] }
+  }
+
   #-----------------------------------------------------------------------------
   # Optional systems
 
