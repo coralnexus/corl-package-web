@@ -22,7 +22,7 @@
             "environment": {
               "production": {
                 "modules": {
-                  "apache": "github:::coralnexus/puppet-apache[b5361977e87365b6642e521a1edccf3d19d2ad76]"
+                  "apache": "github:::coralnexus/puppet-apache[390725a8ed1a50cb530c6b3199071a1bbc42402e]"
                 }
               },
               "qa": {
