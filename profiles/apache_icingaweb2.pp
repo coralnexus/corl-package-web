@@ -1,13 +1,13 @@
 /**
  * Icinga2 web interface profile.
  */
-class coralnexus::web::profile::apache_icinga2web {
+class coralnexus::web::profile::apache_icingaweb2 {
 
   $base_name = 'coralnexus_icinga_interface'
   anchor { $base_name: }
 
-  $apache_vhost_file = global_param('apache_icinga2web_vhost_name', '100-icingaweb2')
-  $apache_vhost_port = global_param('apache_icinga2web_vhost_port', 80)
+  $apache_vhost_file = global_param('apache_icingaweb2_vhost_name', '100-icingaweb2')
+  $apache_vhost_port = global_param('apache_icingaweb2_vhost_port', 80)
 
   #-----------------------------------------------------------------------------
   # Required systems
@@ -28,7 +28,7 @@ class coralnexus::web::profile::apache_icinga2web {
     }
   }
 
-  class { 'icinga2web':
+  class { 'icingaweb2':
     require => [
       Class['coralnexus::core::profile::icinga_server'],
       Class['coralnexus::core::profile::php']
@@ -38,40 +38,40 @@ class coralnexus::web::profile::apache_icinga2web {
   #-----------------------------------------------------------------------------
   # Optional systems
 
-  corl::include { 'apache_icinga2web_classes': require => Class['icinga2web'] }
+  corl::include { 'apache_icingaweb2_classes': require => Class['icingaweb2'] }
 
   #-----------------------------------------------------------------------------
   # Resources
 
-  corl::definitions { 'apache_icinga2web::database':
+  corl::definitions { 'apache_icingaweb2::database':
     type      => 'percona::database',
     resources => {
       icinga_web => {
         ensure        => 'importdb',
-        sql_dump_file => "${icinga2web::params::repo_path}/etc/schema/mysql.schema.sql",
+        sql_dump_file => "${icingaweb2::params::repo_path}/etc/schema/mysql.schema.sql",
         database      => 'icinga2_web',
         user_name     => 'icinga2_web',
         permissions   => 'ALL',
         grant         => false,
         allow_remote  => false,
-        require       => Class['icinga2web']
+        require       => Class['icingaweb2']
       }
     }
   }
 
   #---
 
-  corl::exec { 'apache_icinga2web':
+  corl::exec { 'apache_icingaweb2':
     resources => {
       apache_vhost => {
-        command => "${icinga2web::params::repo_path}/bin/icingacli setup config webserver apache --document-root '${icinga2web::params::repo_path}/public' > /etc/apache2/sites-available/${apache_vhost_file}.conf",
+        command => "${icingaweb2::params::repo_path}/bin/icingacli setup config webserver apache --document-root '${icingaweb2::params::repo_path}/public' > /etc/apache2/sites-available/${apache_vhost_file}.conf",
         creates => "/etc/apache2/sites-available/${apache_vhost_file}.conf",
-        require => Class['icinga2web']
+        require => Class['icingaweb2']
       },
       apache_port => {
         command => "echo 'Listen ${apache_vhost_port}' > /etc/apache2/conf.d/icinga2.conf",
         creates => "/etc/apache2/conf.d/icinga2.conf",
-        require => Class['icinga2web']
+        require => Class['icingaweb2']
       },
       apache_site_enable => {
         command     => "a2ensite ${apache_vhost_file}",
@@ -92,7 +92,7 @@ class coralnexus::web::profile::apache_icinga2web {
 
   #---
 
-  corl::firewall { 'apache_icinga2web':
+  corl::firewall { 'apache_icingaweb2':
     resources => {
       icinga_http => {
         name   => "1000 INPUT Allow Icinga HTTP connections",
