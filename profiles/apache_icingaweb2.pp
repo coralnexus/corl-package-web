@@ -89,8 +89,9 @@ class coralnexus::web::profile::apache_icingaweb2 {
   corl::exec { 'apache_icingaweb2':
     resources => {
       enable_setup_module => {
-        command => "${icingaweb2::params::repo_dir}/bin/icingacli module enable setup",
-        require => Class['icingaweb2']
+        command  => "${icingaweb2::params::repo_dir}/bin/icingacli module enable setup",
+        'unless' => "${icingaweb2::params::repo_dir}/bin/icingacli module list | grep setup",
+        require  => Class['icingaweb2']
       },
       apache_vhost => {
         command => "${icingaweb2::params::repo_dir}/bin/icingacli setup config webserver apache --document-root '${icingaweb2::params::repo_dir}/public' > /etc/apache2/sites-available/${apache_vhost_file}.conf",
