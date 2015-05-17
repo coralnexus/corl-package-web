@@ -48,9 +48,9 @@ class coralnexus::web::profile::apache_icingaweb2 {
     resources => {
       icinga_web => {
         ensure        => 'importdb',
-        sql_dump_file => "${icingaweb2::params::repo_path}/etc/schema/mysql.schema.sql",
-        database      => 'icinga2_web',
-        user_name     => 'icinga2_web',
+        sql_dump_file => "${icingaweb2::params::repo_dir}/etc/schema/mysql.schema.sql",
+        database      => $icingaweb2::params::resource_config['icingaweb2_db']['dbname'],
+        user_name     => $icingaweb2::params::resource_config['icingaweb2_db']['username'],
         permissions   => 'ALL',
         grant         => false,
         allow_remote  => false,
@@ -63,10 +63,14 @@ class coralnexus::web::profile::apache_icingaweb2 {
 
   corl::exec { 'apache_icingaweb2':
     resources => {
-      apache_vhost => {
-        command => "${icingaweb2::params::repo_path}/bin/icingacli setup config webserver apache --document-root '${icingaweb2::params::repo_path}/public' > /etc/apache2/sites-available/${apache_vhost_file}.conf",
-        creates => "/etc/apache2/sites-available/${apache_vhost_file}.conf",
+      enable_setup_module => {
+        command => "${icingaweb2::params::repo_dir}/bin/icingacli module enable setup",
         require => Class['icingaweb2']
+      },
+      apache_vhost => {
+        command => "${icingaweb2::params::repo_dir}/bin/icingacli setup config webserver apache --document-root '${icingaweb2::params::repo_dir}/public' > /etc/apache2/sites-available/${apache_vhost_file}.conf",
+        creates => "/etc/apache2/sites-available/${apache_vhost_file}.conf",
+        require => 'enable_setup_module'
       },
       apache_port => {
         command => "echo 'Listen ${apache_vhost_port}' > /etc/apache2/conf.d/icinga2.conf",
@@ -81,12 +85,9 @@ class coralnexus::web::profile::apache_icingaweb2 {
       apache_restart => {
         command     => "service apache2 restart",
         refreshonly => true,
-        subscribe   => 'apache_site_enable'
+        subscribe   => 'apache_site_enable',
+        notify      => Service['apache']
       }
-    },
-    defaults => {
-      user  => 'www-data',
-      group => 'www-data'
     }
   }
 
