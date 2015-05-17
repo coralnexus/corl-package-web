@@ -64,7 +64,7 @@
             "environment": {
               "production": {
                 "modules": {
-                  "icingaweb2": "github:::coralnexus/puppet-icingaweb2"
+                  "icingaweb2": "github:::coralnexus/puppet-icingaweb2[ebf2ef408616eda9135cb959408a3c0c63bdc94b]"
                 }
               },
               "qa": {
