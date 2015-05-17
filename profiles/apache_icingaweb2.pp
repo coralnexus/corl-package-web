@@ -9,6 +9,9 @@ class coralnexus::web::profile::apache_icingaweb2 {
   $apache_vhost_file = global_param('apache_icingaweb2_vhost_name', '100-icingaweb2')
   $apache_vhost_port = global_param('apache_icingaweb2_vhost_port', 80)
 
+  $icingaweb2_admin_user = global_param('apache_icingaweb2_admin_user', 'admin')
+  $icingaweb2_admin_password_hash = global_param('apache_icingaweb2_admin_password_hash', '$1$rJk8h0JE$.wu1d81VG9ojwSpXXhtyw0') # admin
+
   #-----------------------------------------------------------------------------
   # Required systems
 
@@ -43,19 +46,41 @@ class coralnexus::web::profile::apache_icingaweb2 {
   #-----------------------------------------------------------------------------
   # Resources
 
+  $web_dbname   = $icingaweb2::params::resource_config['icingaweb2_db']['dbname']
+  $web_username = $icingaweb2::params::resource_config['icingaweb2_db']['username']
+
   corl::definitions { 'apache_icingaweb2::database':
     type      => 'percona::database',
     resources => {
       icinga_web => {
         ensure        => 'importdb',
         sql_dump_file => "${icingaweb2::params::repo_dir}/etc/schema/mysql.schema.sql",
-        database      => $icingaweb2::params::resource_config['icingaweb2_db']['dbname'],
-        user_name     => $icingaweb2::params::resource_config['icingaweb2_db']['username'],
+        database      => $web_dbname,
+        user_name     => $web_username,
         permissions   => 'ALL',
         grant         => false,
         allow_remote  => false,
         require       => Class['icingaweb2']
       }
+    }
+  }
+
+  $password_hash_insert = regsubst($icingaweb2_admin_password_hash, '\$', '\$', 'G')
+  $password_hash_check  = regsubst($icingaweb2_admin_password_hash, '\$', '\\\$', 'G')
+
+  corl::definitions { 'apache_icingaweb2::users':
+    type => 'percona::query',
+    resources => {
+      admin => {
+        query      => "REPLACE INTO icingaweb_user (name, active, password_hash, ctime, mtime) VALUES ('${icingaweb2_admin_user}', 1, '${password_hash_insert}', NOW(), NOW())",
+        access     => 'unless',
+        condition  => "SELECT name FROM icingaweb_user WHERE name = '${icingaweb2_admin_user}' AND password_hash = '${password_hash_check}'",
+        database   => $web_dbname,
+        hide_query => true
+      }
+    },
+    defaults => {
+      require => Corl::Definitions['apache_icingaweb2::database']
     }
   }
 
