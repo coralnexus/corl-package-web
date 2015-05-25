@@ -76,6 +76,12 @@
                 }
               }
             }
+          },
+          "zabbix_server": {
+            "extend": [
+              "coralnexus::core::profile::zabbix_client",
+              "coralnexus::core::profile::percona_server"
+            ]
           }
         }
       }
