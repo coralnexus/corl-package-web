@@ -96,12 +96,14 @@ class coralnexus::web::profile::apache_icingaweb2 {
       apache_vhost => {
         command => "${icingaweb2::params::repo_dir}/bin/icingacli setup config webserver apache --document-root '${icingaweb2::params::repo_dir}/public' > /etc/apache2/sites-available/${apache_vhost_file}.conf",
         creates => "/etc/apache2/sites-available/${apache_vhost_file}.conf",
-        require => 'enable_setup_module'
+        require => 'enable_setup_module',
+        notify  => File['apache_vhost_dir']
       },
       apache_port => {
         command => "echo 'Listen ${apache_vhost_port}' > /etc/apache2/conf.d/icinga2.conf",
         creates => "/etc/apache2/conf.d/icinga2.conf",
-        require => Class['icingaweb2']
+        require => Class['icingaweb2'],
+        notify  => File['apache_conf_dir']
       },
       apache_site_enable => {
         command     => "a2ensite ${apache_vhost_file}",
